@@ -163,7 +163,10 @@ def main_equlize(model):
     args = parser.parse_args()
     e_model_path = args.equalizedModel
 
-    num_data, label_to_name, val_generator = prepare_data()
+    num_data, label_to_name, val_generator = prepare_data(num_data = 100,
+                 data_dir = "../data/ILSVRC2012_img_val/",
+                 val_file ="val.txt",
+                 mapping_file="synset_words.txt")
     print("Before equalization..............................")
     evaluate(model)
 
@@ -172,7 +175,6 @@ def main_equlize(model):
     equerlizer.eval()
     for batch in tqdm(val_generator):
         img, label = batch
-        equerlizer.get_features(img)
         equerlizer.equalization(img)
 
     equerlizer.save_weight()

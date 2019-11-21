@@ -7,7 +7,10 @@ from tqdm import tqdm
 
 
 def evaluate(model):
-    num_data, label_to_name, val_generator = prepare_data()
+    num_data, label_to_name, val_generator = prepare_data(num_data = 100,
+                                                         data_dir = "../data/ILSVRC2012_img_val/",
+                                                         val_file ="val.txt",
+                                                         mapping_file="synset_words.txt")
     top_5 = 0
     top_1 = 0
     for batch in tqdm(val_generator):

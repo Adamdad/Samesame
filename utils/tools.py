@@ -34,12 +34,15 @@ def show_image(img):
     plt.imshow(img)
     plt.show()
 
-def prepare_data():
-    num_data = 100
-    data_dir = "../data/ILSVRC2012_img_val/"
+def prepare_data(num_data = 100,
+                 data_dir = "../data/ILSVRC2012_img_val/",
+                 val_file ="val.txt",
+                 mapping_file="synset_words.txt"):
+
+
     dataset = [{"image": os.path.join(data_dir, line.split()[0]),
-                "label": line.split()[1]} for line in open("val.txt").readlines()]
-    label_to_name = [line.split()[0] for line in open("synset_words.txt").readlines()]
+                "label": line.split()[1]} for line in open(val_file).readlines()]
+    label_to_name = [line.split()[0] for line in open(mapping_file).readlines()]
     random.shuffle(dataset)
     val_generator = imagenet_generator_epoch(dataset[:num_data], batch_size=50, num_classes=1000, is_training=False)
     print("{} images with {} classes".format(num_data, len(label_to_name)))
