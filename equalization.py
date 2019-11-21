@@ -1,11 +1,11 @@
 import numpy as np
 import tensorflow.keras as keras
-
+import random
 from tqdm import tqdm
-import keras_applications
-import visual_weights_per_channel
+import os
+from utils import load_image,prepare_data
 import argparse
-
+from eval import evaluate
 keras.backend.set_learning_phase(0)
 class Equalizer:
     def __init__(self,model,e_model_path,max_thresh):
@@ -118,16 +118,8 @@ class Equalizer:
                 new_BNweight = [p * Scale for p in BNweight]
                 BNlayer.set_weights(new_BNweight)
 
-
+    def save_weight(self):
         self.model.save_weights(self.model_path)
-
-def load_image(image_name):
-    img = keras.preprocessing.image.load_img(image_name, target_size=(299, 299))
-    x = keras.preprocessing.image.img_to_array(img)
-    x = np.expand_dims(x, axis=0)
-    x = keras.applications.inception_v3.preprocess_input(x)
-    return x
-
 
 def main():
     parser = argparse.ArgumentParser(description='Parameter of Network equalization.')
@@ -157,6 +149,36 @@ def main():
     print("After equalization...............................")
     preds = model.predict(x)
     print('Predicted:', keras.applications.inception_v3.decode_predictions(preds, top=3)[0])
+
+
+def main_equlize(model):
+    parser = argparse.ArgumentParser(description='Parameter of Network equalization.')
+
+    parser.add_argument('--equalizedModel', default="model.h5",
+                        help='save path of equalized Model')
+    parser.add_argument('--scaleThresh', default=16,
+                        help='scaling Thresh')
+    parser.add_argument('--imagedir', default="elephant.jpg",
+                        help='Image file dir for equalization')
+    args = parser.parse_args()
+    e_model_path = args.equalizedModel
+
+    num_data, label_to_name, val_generator = prepare_data()
+    print("Before equalization..............................")
+    evaluate(model)
+
+    equerlizer = Equalizer(model, e_model_path, args.scaleThresh)
+    equerlizer.eval()
+    for batch in tqdm(val_generator):
+        img, label = batch
+        equerlizer.equalization(img)
+
+    equerlizer.save_weight()
+
+    model.load_weights(e_model_path)
+    print("After equalization...............................")
+    evaluate(model)
+
 
 if __name__=="__main__":
     main()
