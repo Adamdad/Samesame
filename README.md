@@ -1,5 +1,5 @@
 # Same, Same But Different
-An Tensorflow.keras implementation of ICME2019 paper 
+An Tensorflow.keras implementation of ICML2019 paper 
 "Same, Same But Different - Recovering Neural Network Quantization Error Through Weight Factorization"(https://arxiv.org/pdf/1902.01917.pdf)
 ![motivation](inverse_frac.png)
 ## Quick Start
