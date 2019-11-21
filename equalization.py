@@ -167,10 +167,12 @@ def main_equlize(model):
     print("Before equalization..............................")
     evaluate(model)
 
+    print("Start equalization..............................")
     equerlizer = Equalizer(model, e_model_path, args.scaleThresh)
     equerlizer.eval()
     for batch in tqdm(val_generator):
         img, label = batch
+        equerlizer.get_features(img)
         equerlizer.equalization(img)
 
     equerlizer.save_weight()
@@ -181,4 +183,5 @@ def main_equlize(model):
 
 
 if __name__=="__main__":
-    main()
+    model = keras.applications.inception_v3.InceptionV3(weights='imagenet', include_top=True)
+    main_equlize(model)

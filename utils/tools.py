@@ -35,7 +35,7 @@ def show_image(img):
     plt.show()
 
 def prepare_data():
-    num_data = 1000
+    num_data = 100
     data_dir = "../data/ILSVRC2012_img_val/"
     dataset = [{"image": os.path.join(data_dir, line.split()[0]),
                 "label": line.split()[1]} for line in open("val.txt").readlines()]
