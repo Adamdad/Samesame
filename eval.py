@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 
 def evaluate(model):
-    num_data, label_to_name, val_generator = prepare_data(num_data = 100,
+    num_data, label_to_name, val_generator = prepare_data(num_data = 200,
                                                          data_dir = "../data/ILSVRC2012_img_val/",
                                                          val_file ="val.txt",
                                                          mapping_file="synset_words.txt")
@@ -22,5 +22,7 @@ def evaluate(model):
 
 
 if __name__=="__main__":
+    e_model_path= "model.h5"
     model = keras.applications.inception_v3.InceptionV3(weights='imagenet', include_top=True)
+    model.load_weights(e_model_path)
     evaluate(model)

@@ -6,6 +6,7 @@ import os
 from utils import load_image,prepare_data
 import argparse
 from eval import evaluate
+import keras_applications
 keras.backend.set_learning_phase(0)
 class Equalizer:
     def __init__(self,model,e_model_path,max_thresh):
@@ -27,6 +28,7 @@ class Equalizer:
         :return: a dict of input feature map every conv layer
         '''
         features = {}
+        last_index = 0
         for idx,layer in enumerate(tqdm(self.model.layers)):
             if layer.name.startswith("conv"):
                 feature_layer = []
@@ -37,7 +39,8 @@ class Equalizer:
                     feature = np.array(layer_model(x))
                     feature_layer.append(feature)
                 features[idx] = feature_layer
-        return features
+                last_index = idx
+        return features,last_index
 
     def zero_divide(self,x,y):
         ''' Calculate x/y, deal with y=0 situation
@@ -59,7 +62,7 @@ class Equalizer:
         :return: None
         '''
         print("\nGenerate the original input feature map................")
-        oriInfeatures = self.get_features(x)
+        oriInfeatures,last_index = self.get_features(x)
         print("\nLayer by Layer Equalization round.................")
         for idx,layer in enumerate(tqdm(self.model.layers)):
             # For each Conv layer, get its input
@@ -70,12 +73,12 @@ class Equalizer:
                 for node in layer._inbound_nodes:
 
                     pre_layer = node.inbound_layers
-                    # print(pre_layer.name)
                     layer_model = keras.Model(inputs=self.model.input,
                                         outputs=pre_layer.output)
                     newInfeature = np.array(layer_model(x))
                     oriInChMax = np.max(oriInfeature[0], axis=(0,1,2))
                     newInChMax = np.max(newInfeature, axis=(0, 1, 2))
+
                     scaleInChMax = self.zero_divide(oriInChMax,newInChMax)
 
                     scaleInChMaxs.append(scaleInChMax)
@@ -85,38 +88,44 @@ class Equalizer:
                     adj_weight[:,:,:,s,:]*=scaleInChMaxs[0][s]
                 layer.set_weights(adj_weight)
 
-                # Calculate the kernel scale for each channel
-                new_weight = np.array(layer.get_weights())
-                kerOutMax = np.max(new_weight)
-                kerOutChMax = np.max(new_weight,axis = (0,1,2,3))
-                kerScale =  self.zero_divide(kerOutMax,kerOutChMax)
+                # Scale the weight except the last layer
+                if idx!=last_index:
+                    # Calculate the kernel scale for each channel
+                    new_weight = np.array(layer.get_weights())
+                    kerOutMax = np.max(np.abs(new_weight))
+                    kerOutChMax = np.max(np.abs(new_weight),axis = (0,1,2,3))
+                    kerScale = self.zero_divide(kerOutMax,kerOutChMax)
 
-                BN_node =layer._outbound_nodes[0]
-                BNlayer = BN_node.outbound_layer
+                    BN_node =layer._outbound_nodes[0]
+                    BNlayer = BN_node.outbound_layer
 
-                act_node = BNlayer._outbound_nodes[0]
-                actlayer = act_node.outbound_layer
-                actlayer_model = keras.Model(inputs=self.model.input,
-                                          outputs=actlayer.output)
-                # Calculate the activation scale for each channel
-                act = np.array(actlayer_model(x))
-                actOutMax = np.max(act)
-                actOutChMax = np.max(act, axis=(0, 1, 2))
-                actScale = self.zero_divide(actOutMax, actOutChMax)
+                    act_node = BNlayer._outbound_nodes[0]
+                    actlayer = act_node.outbound_layer
+                    actlayer_model = keras.Model(inputs=self.model.input,
+                                              outputs=actlayer.output)
+                    # Calculate the activation scale for each channel
+                    act = np.array(actlayer_model(x))
+                    actOutMax = np.max(act,axis = (0,1,2,3))
+                    actOutChMax = np.max(act, axis=(0, 1, 2))
+                    actScale = self.zero_divide(actOutMax, actOutChMax)
 
-                # Scale = min(actScale,kerScale,thresh)
-                thresh = np.ones_like(kerScale) * self.max_thresh
-                Scale = np.array([actScale, kerScale, thresh])
-                Scale = np.min(Scale, axis=0)
+                    # Scale = min(actScale,kerScale,thresh)
+                    thresh = np.ones_like(kerScale) * self.max_thresh
+                    Scale = np.array([actScale, kerScale, thresh])
+                    Scale = np.min(Scale, axis=0)
 
-                # Scale the kernel
-                for s in range(len(Scale)):
-                    new_weight[:, :, :, :, s] *= Scale[s]
-                layer.set_weights(new_weight)
-                # Scale the BN
-                BNweight = BNlayer.get_weights()
-                new_BNweight = [p * Scale for p in BNweight]
-                BNlayer.set_weights(new_BNweight)
+                    # Scale the kernel
+                    for s in range(len(Scale)):
+                        new_weight[:, :, :, :, s] *= Scale[s]
+                    layer.set_weights(new_weight)
+                    # Scale the BN
+                    new_BNweight = np.array(BNlayer.get_weights())
+
+                    # [gamma, beta, mean, std]
+                    new_BNweight[0] *= Scale
+                    new_BNweight[1] *= Scale
+
+                    BNlayer.set_weights(new_BNweight)
 
     def save_weight(self):
         self.model.save_weights(self.model_path)
@@ -145,6 +154,8 @@ def main():
     equerlizer = Equalizer(model,e_model_path,args.scaleThresh)
     equerlizer.eval()
     equerlizer.equalization(x)
+    equerlizer.save_weight()
+
     model.load_weights(e_model_path)
     print("After equalization...............................")
     preds = model.predict(x)
@@ -186,4 +197,5 @@ def main_equlize(model):
 
 if __name__=="__main__":
     model = keras.applications.inception_v3.InceptionV3(weights='imagenet', include_top=True)
-    main_equlize(model)
+    # main_equlize(model)
+    main()
