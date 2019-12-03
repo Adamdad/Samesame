@@ -31,7 +31,7 @@ This code has been tested on Ubuntu 18.04, Python 3.7, Tensorflow 2.0
 | Network       | 32bit      |          | 32bit-Equalized|              | 8bit |             |   
 |---------------|-----------|----------|--------------|----------------|-----------|----------|
 |               |  top1    |     top5   |     top1    |     top5         |    top1    |    top5|
-| Inception-v3  | 76.276   |    93.032  |             |                  |            |        |
+| Inception-v3  | 76.276   |    93.032  |     75.61   |     92.58       |            |        |
     
 ## Citation
     @article{meller2019same,
