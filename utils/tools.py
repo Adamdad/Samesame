@@ -35,6 +35,7 @@ def show_image(img):
     plt.show()
 
 def prepare_data(num_data = 100,
+                 batch_size = 50,
                  data_dir = "../data/ILSVRC2012_img_val/",
                  val_file ="val.txt",
                  mapping_file="synset_words.txt"):
@@ -44,6 +45,11 @@ def prepare_data(num_data = 100,
                 "label": line.split()[1]} for line in open(val_file).readlines()]
     label_to_name = [line.split()[0] for line in open(mapping_file).readlines()]
     random.shuffle(dataset)
-    val_generator = imagenet_generator_epoch(dataset[:num_data], batch_size=50, num_classes=1000, is_training=False)
-    print("{} images with {} classes".format(num_data, len(label_to_name)))
-    return num_data, label_to_name, val_generator
+    if num_data == "all":
+        dataset = dataset
+    else:
+        dataset = dataset[:num_data]
+
+    val_generator = imagenet_generator_epoch(dataset, batch_size=batch_size, num_classes=1000, is_training=False)
+    print("{} images with {} classes".format(len(dataset), len(label_to_name)))
+    return len(dataset), label_to_name, val_generator
