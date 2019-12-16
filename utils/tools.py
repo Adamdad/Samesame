@@ -11,22 +11,28 @@ def load_image(image_name):
     x = keras.applications.inception_v3.preprocess_input(x)
     return x
 
-def imagenet_generator_epoch(dataset, batch_size=32, num_classes=1000, is_training=False):
-    images = np.zeros((batch_size, 299, 299, 3))
-    labels = np.zeros((batch_size, num_classes))
-    count = 0
+class imagenet_generator_epoch:
+    def __init__(self,dataset, batch_size=32, num_classes=1000,is_training=False):
+        self.dataset = dataset
+        self.batch_size = batch_size
+        self.num_classes = num_classes
 
-    for sample in dataset:
-        image = sample["image"]
-        label = sample["label"]
+    def generate(self):
+        images = np.zeros((self.batch_size, 299, 299, 3))
+        labels = np.zeros((self.batch_size, self.num_classes))
+        count = 0
 
-        images[count % batch_size] = load_image(image)
-        labels[count % batch_size] = np.expand_dims(keras.utils.to_categorical(label, num_classes=num_classes), 0)
+        for sample in self.dataset:
+            image = sample["image"]
+            label = sample["label"]
 
-        count += 1
+            images[count % self.batch_size] = load_image(image)
+            labels[count % self.batch_size] = np.expand_dims(keras.utils.to_categorical(label, num_classes=self.num_classes), 0)
 
-        if (count % batch_size == 0):
-            yield images, labels
+            count += 1
+
+            if (count % self.batch_size == 0):
+                yield images, labels
 
 def show_image(img):
     img = img[0]
@@ -51,5 +57,5 @@ def prepare_data(num_data = 100,
         dataset = dataset[:num_data]
 
     val_generator = imagenet_generator_epoch(dataset, batch_size=batch_size, num_classes=1000, is_training=False)
-    print("{} images with {} classes".format(len(dataset), len(label_to_name)))
-    return len(dataset), label_to_name, val_generator
+    print("{} images with {} classes".format(num_data, len(label_to_name)))
+    return num_data, label_to_name, val_generator

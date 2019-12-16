@@ -133,7 +133,7 @@ class Equalizer:
 def main():
     parser = argparse.ArgumentParser(description='Parameter of Network equalization.')
 
-    parser.add_argument('--equalizedModel',default="model.h5",
+    parser.add_argument('--equalizedModel',default="Inceptionv3_equalized.h5",
                         help='save path of equalized Model')
     parser.add_argument('--scaleThresh', default=16,
                         help='scaling Thresh')
@@ -165,7 +165,7 @@ def main():
 def main_equlize(model):
     parser = argparse.ArgumentParser(description='Parameter of Network equalization.')
 
-    parser.add_argument('--equalizedModel', default="model.h5",
+    parser.add_argument('--equalizedModel', default="Inceptionv3_equalized.h5",
                         help='save path of equalized Model')
     parser.add_argument('--scaleThresh', default=16,
                         help='scaling Thresh')

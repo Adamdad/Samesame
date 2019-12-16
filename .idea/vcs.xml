@@ -4,5 +4,7 @@
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/equalization" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/imagenet_validation" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/model/qkeras" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/qkeras" vcs="Git" />
   </component>
 </project>
