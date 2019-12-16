@@ -26,6 +26,9 @@ This code has been tested on Ubuntu 18.04, Python 3.7, Tensorflow 2.0
             
             def visual_graph(model,fig_name='model.png')
 
+## Quantization
+The post-training quantization is implemented with TF-Lite, with two mode of "weight quantization" and "full quantization". See details in *def qevaluate*
+
 ## Performance Compare
 #### Imagenet Validation result
 | Network       | 32bit      |          | 32bit-Equalized|              | 8bit |             |   
