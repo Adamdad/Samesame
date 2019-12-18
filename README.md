@@ -31,10 +31,10 @@ The post-training quantization is implemented with TF-Lite, with two mode of "we
 
 ## Performance Compare
 #### Imagenet Validation result
-| Network       | 32bit      |          | 32bit-Equalized|              | 8bit |             |   
-|---------------|-----------|----------|--------------|----------------|-----------|----------|
-|               |  top1    |     top5   |     top1    |     top5         |    top1    |    top5|
-| Inception-v3  | 76.276   |    93.032  |     75.61   |     92.58       |            |        |
+| Network       | 32bit      |          | 32bit-Equalized|             | 8bit-weight |          | 8bit-Equalized-weight |             |   
+|---------------|-----------|----------|--------------|----------------|-------------|----------|---------------|--------------|
+|               |  top1    |     top5   |     top1    |     top5       |   top1      |    top5  |    top1       |    top5      |
+| Inception-v3  | 76.276   |    93.032  |     75.61   |     92.58      |             |          |               |                    |
     
 ## Citation
     @article{meller2019same,

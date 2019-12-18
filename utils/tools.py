@@ -55,7 +55,7 @@ def prepare_data(num_data = 100,
         dataset = dataset
     else:
         dataset = dataset[:num_data]
-
+    num_data = len(dataset)
     val_generator = imagenet_generator_epoch(dataset, batch_size=batch_size, num_classes=1000, is_training=False)
     print("{} images with {} classes".format(num_data, len(label_to_name)))
     return num_data, label_to_name, val_generator
